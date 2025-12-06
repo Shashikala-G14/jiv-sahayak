@@ -2,9 +2,20 @@ import { GoogleGenAI, Modality } from "@google/genai";
 import { Language, Persona } from '../types';
 
 // --- CONFIGURATION ---
-// 1. If using .env file, ensure it is in the ROOT directory and named '.env'
-// 2. OR, for quick testing, replace the string below with your actual key:
-const API_KEY = process.env.API_KEY || "PASTE_YOUR_KEY_HERE"; 
+// Safely check for environment variables to prevent crashes in browsers (Vite/React)
+let envKey = "";
+try {
+  // @ts-ignore
+  if (typeof process !== 'undefined' && process.env) {
+    // @ts-ignore
+    envKey = process.env.API_KEY;
+  }
+} catch (e) {
+  // Ignore reference errors
+}
+
+// REPLACE "PASTE_YOUR_KEY_HERE" WITH YOUR ACTUAL KEY IF RUNNING LOCALLY WITHOUT ENV FILES
+const API_KEY = envKey || "PASTE_YOUR_KEY_HERE"; 
 
 export const getSystemInstruction = (language: Language, persona: Persona) => {
   let langInstruction = "English";
@@ -31,11 +42,11 @@ export const generateAssistantResponse = async (
   persona: Persona
 ): Promise<{ text: string; audioBase64?: string }> => {
   try {
-    // Safety check: Prevent crash if key is missing
-    if (!API_KEY || API_KEY === "PASTE_YOUR_KEY_HERE") {
+    // Safety check: Prevent crash if key is missing or default
+    if (!API_KEY || API_KEY.includes("PASTE_YOUR_KEY")) {
        console.error("API Key is missing.");
        return {
-         text: "Error: Please add your Gemini API Key in services/geminiService.ts to chat.",
+         text: "Error: Please update 'services/geminiService.ts' with your Gemini API Key.",
          audioBase64: undefined
        };
     }
@@ -44,7 +55,6 @@ export const generateAssistantResponse = async (
     const ai = new GoogleGenAI({ apiKey: API_KEY });
 
     // 1. Generate Text Response
-    // Switched to 'gemini-2.5-flash' for faster response times
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash', 
       contents: prompt,
@@ -57,7 +67,6 @@ export const generateAssistantResponse = async (
     const text = response.text || "I am listening, but I cannot speak right now.";
 
     // 2. Generate Audio (TTS) for the response
-    // Using flash-preview-tts for low latency
     let audioBase64: string | undefined = undefined;
     
     try {
@@ -69,7 +78,6 @@ export const generateAssistantResponse = async (
           speechConfig: {
             voiceConfig: {
               prebuiltVoiceConfig: { 
-                // Using 'Kore' for a gentle, neutral voice. 
                 voiceName: 'Kore' 
               },
             },
@@ -90,7 +98,7 @@ export const generateAssistantResponse = async (
   } catch (error) {
     console.error("Gemini API Error:", error);
     return { 
-      text: language === Language.ENGLISH ? "I am having trouble connecting. Please check your internet or API Key." : "माफ करना, संपर्क नहीं हो पा रहा है।",
+      text: language === Language.ENGLISH ? "Connection error. Please check your internet or API Key." : "संपर्क त्रुटि।",
       audioBase64: undefined 
     };
   }

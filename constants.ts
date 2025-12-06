@@ -3,9 +3,7 @@ import {
   Heart, 
   Briefcase, 
   Smile, 
-  Users,
-  Smartphone,
-  Apple
+  Users
 } from 'lucide-react';
 
 // Using an image depicting Indian women/community empowerment/education
@@ -251,7 +249,6 @@ export const MOCK_MODULES: Module[] = [
     },
     isCompleted: false,
   },
-  // NEW MODULES
   {
     id: 'm7',
     category: 'skills',
