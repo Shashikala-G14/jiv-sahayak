@@ -1,0 +1,7 @@
+{
+  "name": "Copy of JivSahayak",
+  "description": "A social-impact app for underserved communities providing life education, skills training, and AI assistance in local languages.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
