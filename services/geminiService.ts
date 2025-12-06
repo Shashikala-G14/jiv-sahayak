@@ -1,9 +1,10 @@
 import { GoogleGenAI, Modality } from "@google/genai";
 import { Language, Persona } from '../types';
 
-// NOTE: In a real app, this key should not be exposed on the client side directly
-// or should be proxied. For this prototype, we assume it's injected via env.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+// --- CONFIGURATION ---
+// 1. If using .env file, ensure it is in the ROOT directory and named '.env'
+// 2. OR, for quick testing, replace the string below with your actual key:
+const API_KEY = process.env.API_KEY || "PASTE_YOUR_KEY_HERE"; 
 
 export const getSystemInstruction = (language: Language, persona: Persona) => {
   let langInstruction = "English";
@@ -30,6 +31,18 @@ export const generateAssistantResponse = async (
   persona: Persona
 ): Promise<{ text: string; audioBase64?: string }> => {
   try {
+    // Safety check: Prevent crash if key is missing
+    if (!API_KEY || API_KEY === "PASTE_YOUR_KEY_HERE") {
+       console.error("API Key is missing.");
+       return {
+         text: "Error: Please add your Gemini API Key in services/geminiService.ts to chat.",
+         audioBase64: undefined
+       };
+    }
+
+    // Initialize AI Client only when needed (Lazy Load)
+    const ai = new GoogleGenAI({ apiKey: API_KEY });
+
     // 1. Generate Text Response
     // Switched to 'gemini-2.5-flash' for faster response times
     const response = await ai.models.generateContent({
@@ -77,7 +90,7 @@ export const generateAssistantResponse = async (
   } catch (error) {
     console.error("Gemini API Error:", error);
     return { 
-      text: language === Language.ENGLISH ? "I am having trouble connecting. Please try again." : "माफ करना, संपर्क नहीं हो पा रहा है।",
+      text: language === Language.ENGLISH ? "I am having trouble connecting. Please check your internet or API Key." : "माफ करना, संपर्क नहीं हो पा रहा है।",
       audioBase64: undefined 
     };
   }

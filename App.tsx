@@ -590,17 +590,15 @@ function App() {
         <div className="grid grid-cols-1 gap-4">
           {modules.map((module) => {
              // Resolve Icon
-             let ModuleIcon = module.icon as unknown as React.ElementType;
-             // If icon is a string in IconMap, use that component, else fallback or render string
+             // We use a safe resolver pattern to avoid rendering errors if IconMap doesn't have the key
+             let ModuleIcon: React.ElementType = BookOpen; // Default
+             
              if (typeof module.icon === 'string') {
                 if (IconMap[module.icon]) {
                     ModuleIcon = IconMap[module.icon];
-                } else if (module.icon.length > 2) {
-                    // It's a string ID but not in map, fallback
-                     ModuleIcon = BookOpen;
-                } else {
-                    // It's an emoji string
-                    ModuleIcon = (() => <span className="text-2xl">{module.icon}</span>) as unknown as React.ElementType;
+                } else if (module.icon.length <= 2) {
+                     // It's likely an emoji
+                     ModuleIcon = (() => <span className="text-2xl">{module.icon}</span>) as unknown as React.ElementType;
                 }
              }
 
